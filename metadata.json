@@ -1,0 +1,6 @@
+{
+  "name": "Sportivo",
+  "description": "A high-performance sports news platform featuring live scores, match schedules, team analytics, and breaking news updates.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
