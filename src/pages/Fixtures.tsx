@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Calendar, Clock, ChevronRight, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
+import { getFixtures } from '../lib/sportsApi';
 
 interface Fixture {
   idEvent: string;
@@ -41,8 +42,7 @@ export default function Fixtures() {
     async function fetchFixtures() {
       setLoading(true);
       try {
-        const response = await fetch(`/api/sports/fixtures?league=${selectedLeague}`);
-        const data = await response.json();
+        const data = await getFixtures(selectedLeague);
         if (data.events && data.events.length > 0) {
           setFixtures(data.events);
         }

@@ -5,6 +5,7 @@ import { Calendar, MapPin, Users, Trophy, ChevronLeft, Star, Bell } from 'lucide
 import { useAuth } from '../context/AuthContext';
 import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { getTeam, getTeamEvents } from '../lib/sportsApi';
 
 interface Team {
   idTeam: string;
@@ -56,8 +57,8 @@ export default function TeamDetail() {
     async function fetchTeamData() {
       setLoading(true);
       try {
-        const response = await fetch(`/api/sports/team/${id}`);
-        const data = await response.json();
+        if (!id) return;
+        const data = await getTeam(id);
         
         if (data.teams && data.teams.length > 0) {
           const teamData = data.teams[0];
@@ -68,8 +69,7 @@ export default function TeamDetail() {
           }
         }
         
-        const eventsRes = await fetch(`/api/sports/team/${id}/events`);
-        const eventsData = await eventsRes.json();
+        const eventsData = await getTeamEvents(id);
         
         if (eventsData.events) {
           const upcoming = eventsData.events.filter((e: Match) => !e.intHomeScore || e.intHomeScore === '0');

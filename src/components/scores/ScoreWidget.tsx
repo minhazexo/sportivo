@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
+import { getScores } from '../../lib/sportsApi';
 
 interface Match {
   idEvent: string;
@@ -26,8 +27,7 @@ export default function ScoreWidget() {
   useEffect(() => {
     async function fetchScores() {
       try {
-        const response = await fetch('/api/sports/scores?league=4328');
-        const data = await response.json();
+        const data = await getScores('4328');
         if (data.events && data.events.length > 0) {
           setMatches(data.events.slice(0, 5));
         }

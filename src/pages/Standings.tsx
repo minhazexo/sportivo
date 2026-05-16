@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { getStandings } from '../lib/sportsApi';
 
 interface TeamStanding {
   intRank: string;
@@ -55,19 +56,18 @@ export default function Standings() {
       setLoading(true);
       try {
         const leagueId = LEAGUE_IDS[selectedLeague];
-        const response = await fetch(`/api/sports/standings?league=${leagueId}`);
-        const data = await response.json();
+        const data = await getStandings(leagueId);
         if (data.table && data.table.length > 0) {
           setStandings({
             league: selectedLeague,
             country: 'Various',
             teams: data.table.map((t: any) => ({
-              intRank: t.position,
-              strTeam: t.team?.name || t.teamName,
-              strTeamBadge: t.team?.logo || '',
-              intPlayed: t.playedGames,
-              intWin: t.won,
-              intDraw: t.draw,
+              intRank: t.position || t.intRank,
+              strTeam: t.strTeam || t.teamName || 'Unknown',
+              strTeamBadge: t.strTeamBadge || '',
+              intPlayed: t.intPlayed || t.played || '0',
+              intWin: t.intWin || t.won || '0',
+              intDraw: t.intDraw || t.draw || '0',
               intLoss: t.lost,
               intGoalsFor: t.goalsFor,
               intGoalsAgainst: t.goalsAgainst,

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { getScores, getFixtures, getStandings } from '../lib/sportsApi';
 import ScoreWidget from '../components/scores/ScoreWidget';
 import ArticleCard from '../components/news/ArticleCard';
 import OptimizedImage from '../components/news/OptimizedImage';
@@ -105,9 +106,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchMatches() {
       try {
-        const response = await fetch('/api/sports/scores?league=4328');
-        if (!response.ok) throw new Error('Failed to fetch');
-        const data = await response.json();
+        const data = await getScores('4328');
         if (data.events && data.events.length > 0) {
           setMatches(data.events.slice(0, 5));
         }
@@ -123,9 +122,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchFixtures() {
       try {
-        const response = await fetch('/api/sports/fixtures?league=4328');
-        if (!response.ok) throw new Error('Failed to fetch');
-        const data = await response.json();
+        const data = await getFixtures('4328');
         if (data.events && data.events.length > 0) {
           setFixtures(data.events.slice(0, 5));
         }
@@ -141,9 +138,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchStandings() {
       try {
-        const response = await fetch('/api/sports/standings?league=4328');
-        if (!response.ok) throw new Error('Failed to fetch');
-        const data = await response.json();
+        const data = await getStandings('4328');
         if (data.table && data.table.length > 0) {
           setStandings(data.table.slice(0, 10));
         }

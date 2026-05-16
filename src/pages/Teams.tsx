@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Search, Filter, ArrowUpRight, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getTeams } from '../lib/sportsApi';
 
 export default function Teams() {
   const [teams, setTeams] = useState<any[]>([]);
@@ -12,8 +13,7 @@ export default function Teams() {
     async function fetchTeams() {
       setLoading(true);
       try {
-        const response = await fetch(`/api/sports/teams/${encodeURIComponent(league)}`);
-        const data = await response.json();
+        const data = await getTeams(league);
         setTeams(data.teams || []);
       } catch (error) {
         console.error("Teams error:", error);

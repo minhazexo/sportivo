@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Calendar, Clock, MapPin, Trophy, ChevronLeft, Building2, Users } from 'lucide-react';
 import { format } from 'date-fns';
+import { getMatch } from '../lib/sportsApi';
 
 interface Match {
   idEvent: string;
@@ -57,11 +58,13 @@ export default function MatchDetail() {
     async function fetchMatch() {
       setLoading(true);
       try {
-        const response = await fetch(`/api/sports/match/${id}`);
-        const data = await response.json();
-        
-        if (data.events && data.events.length > 0) {
-          setMatch(data.events[0]);
+        if (id) {
+          const data = await getMatch(id);
+          if (data.events && data.events.length > 0) {
+            setMatch(data.events[0]);
+          } else {
+            setMatch(MOCK_MATCH);
+          }
         } else {
           setMatch(MOCK_MATCH);
         }
@@ -72,7 +75,7 @@ export default function MatchDetail() {
         setLoading(false);
       }
     }
-    if (id) fetchMatch();
+    fetchMatch();
   }, [id]);
 
   if (loading) return (
