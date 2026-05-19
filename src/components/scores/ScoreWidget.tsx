@@ -1,35 +1,23 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { getScores } from '../../lib/sportsApi';
+import { getScores, LEAGUE_IDS } from '../../lib/sportsApi';
+import type { Match } from '../../lib/sportsApi';
 
-interface Match {
-  idEvent: string;
-  strEvent: string;
-  strHomeTeam: string;
-  strAwayTeam: string;
-  intHomeScore: string;
-  intAwayScore: string;
-  strStatus: string;
-  strTime: string;
-  strThumb: string;
+interface ScoreWidgetProps {
+  compact?: boolean;
 }
 
-const MOCK_MATCHES: Match[] = [
-  { idEvent: '1', strEvent: 'Arsenal vs Man City', strHomeTeam: 'Arsenal', strAwayTeam: 'Man City', intHomeScore: '2', intAwayScore: '1', strStatus: 'LIVE', strTime: "75'", strThumb: '' },
-  { idEvent: '2', strEvent: 'Real Madrid vs Barcelona', strHomeTeam: 'Real Madrid', strAwayTeam: 'Barcelona', intHomeScore: '0', intAwayScore: '0', strStatus: 'SCHEDULED', strTime: '20:00', strThumb: '' },
-  { idEvent: '3', strEvent: 'Lakers vs Warriors', strHomeTeam: 'Lakers', strAwayTeam: 'Warriors', intHomeScore: '102', intAwayScore: '98', strStatus: 'Finished', strTime: 'FT', strThumb: '' },
-];
-
-export default function ScoreWidget() {
-  const [matches, setMatches] = useState<Match[]>(MOCK_MATCHES);
+export default function ScoreWidget({ compact = false }: ScoreWidgetProps) {
+  const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchScores() {
       try {
-        const data = await getScores('4328');
+        const data = await getScores(LEAGUE_IDS.PREMIER_LEAGUE);
         if (data.events && data.events.length > 0) {
-          setMatches(data.events.slice(0, 5));
+          setMatches(data.events.slice(0, 8));
         }
       } catch (error) {
         console.error("Scores fetch error:", error);
@@ -40,31 +28,122 @@ export default function ScoreWidget() {
     fetchScores();
   }, []);
 
+  if (compact) {
+    return (
+      <div className="bg-espn-dark border-b border-gray-800/50 overflow-hidden">
+        <div className="flex items-center">
+          <div className="flex items-center gap-2 px-4 py-2 bg-accent shrink-0">
+            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+            <span className="text-white text-[10px] font-bold uppercase tracking-wider">LIVE</span>
+          </div>
+          <div className="flex gap-6 overflow-x-auto no-scrollbar px-4 py-2">
+            {loading ? (
+              <span className="text-gray-500 text-[11px] font-medium">Loading scores...</span>
+            ) : matches.length === 0 ? (
+              <span className="text-gray-500 text-[11px] font-medium">No matches available</span>
+            ) : (
+              matches.slice(0, 6).map((match) => (
+                <Link
+                  key={match.idEvent}
+                  to={`/match/${match.idEvent}`}
+                  className="flex items-center gap-3 shrink-0 border-r border-gray-700/30 pr-6 hover:bg-white/5 transition-colors py-1 -my-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-300 text-[12px] font-semibold whitespace-nowrap">
+                      {match.strHomeTeam?.substring(0, 8) || 'Home'}
+                    </span>
+                    <span className="text-white text-[14px] font-extrabold min-w-[18px] text-center">
+                      {match.intHomeScore ?? '-'}
+                    </span>
+                    <span className="text-gray-600 text-[9px] font-medium">vs</span>
+                    <span className="text-white text-[14px] font-extrabold min-w-[18px] text-center">
+                      {match.intAwayScore ?? '-'}
+                    </span>
+                    <span className="text-gray-300 text-[12px] font-semibold whitespace-nowrap">
+                      {match.strAwayTeam?.substring(0, 8) || 'Away'}
+                    </span>
+                  </div>
+                  <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 ${
+                    match.strStatus === 'Live' || match.strStatus === 'In Progress'
+                      ? 'bg-red-600/20 text-red-400'
+                      : 'bg-gray-700/50 text-gray-500'
+                  }`}>
+                    {match.strStatus === 'Live' || match.strStatus === 'In Progress' ? 'LIVE' : 'FT'}
+                  </span>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-12 bg-white border-b border-zinc-300 flex items-center px-6 gap-8 overflow-hidden -mx-4 md:mx-0 shrink-0 mb-8">
-      <div className="flex items-center gap-2 shrink-0">
-        <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse"></span>
-        <span className="editorial-label text-black">Live Scores</span>
+    <div className="espn-card mb-6">
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b" style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border-primary)' }}>
+        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-primary)' }}>
+          Live Scores
+        </span>
+        <span className="text-[9px] font-medium ml-auto" style={{ color: 'var(--color-text-tertiary)' }}>
+          {matches.length} matches
+        </span>
       </div>
       
-      <div className="flex gap-12 font-mono text-[12px] whitespace-nowrap overflow-x-auto no-scrollbar">
+      <div className="flex gap-6 overflow-x-auto no-scrollbar px-4 py-3">
         {loading ? (
-          <span className="editorial-label text-zinc-400">Loading scores...</span>
-        ) : matches.length === 0 ? (
-          <span className="editorial-label text-zinc-400">No matches available</span>
-        ) : (
-          matches.map((match) => (
-            <div key={match.idEvent} className="flex gap-6 border-r pr-8 border-zinc-200 last:border-0 items-center">
-              <div className="flex gap-3">
-                <span className="font-bold flex gap-1.5 uppercase">{match.strHomeTeam?.substring(0, 3) || '---'} <span className="font-black text-black">{match.intHomeScore || '0'}</span></span>
-                <span className="font-bold flex gap-1.5 uppercase">{match.strAwayTeam?.substring(0, 3) || '---'} <span className="font-black text-black">{match.intAwayScore || '0'}</span></span>
+          <div className="flex gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex gap-4 items-center animate-pulse">
+                <div className="h-4 w-16" style={{ backgroundColor: 'var(--color-skeleton)', borderRadius: '4px' }} />
+                <div className="h-4 w-6" style={{ backgroundColor: 'var(--color-skeleton)', borderRadius: '4px' }} />
+                <div className="h-4 w-16" style={{ backgroundColor: 'var(--color-skeleton)', borderRadius: '4px' }} />
               </div>
-              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
-                match.strStatus === 'Live' || match.strStatus === 'In Progress' ? 'text-red-500' : 'text-zinc-400'
-              }`}>
-                {match.strStatus === 'Live' || match.strStatus === 'In Progress' ? match.strTime : match.strStatus}
+            ))}
+          </div>
+        ) : matches.length === 0 ? (
+          <span className="text-[12px] font-medium py-1" style={{ color: 'var(--color-text-tertiary)' }}>No matches available</span>
+        ) : (
+          matches.slice(0, 8).map((match) => (
+            <Link
+              key={match.idEvent}
+              to={`/match/${match.idEvent}`}
+              className="flex items-center gap-3 shrink-0 pr-6 last:border-0 py-1 -my-1 group"
+              style={{ borderRight: '1px solid var(--color-border-primary)' }}
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-[12px] font-bold group-hover:text-accent transition-colors whitespace-nowrap" style={{ color: 'var(--color-text-primary)' }}>
+                  {match.strHomeTeam?.substring(0, 10) || 'Home'}
+                </span>
+                <span className="text-[14px] font-extrabold min-w-[18px] text-center" style={{ color: 'var(--color-text-primary)' }}>
+                  {match.intHomeScore ?? '-'}
+                </span>
+                <span className="text-[9px] font-medium" style={{ color: 'var(--color-text-tertiary)' }}>v</span>
+                <span className="text-[14px] font-extrabold min-w-[18px] text-center" style={{ color: 'var(--color-text-primary)' }}>
+                  {match.intAwayScore ?? '-'}
+                </span>
+                <span className="text-[12px] font-bold group-hover:text-accent transition-colors whitespace-nowrap" style={{ color: 'var(--color-text-primary)' }}>
+                  {match.strAwayTeam?.substring(0, 10) || 'Away'}
+                </span>
+              </div>
+              <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                match.strStatus === 'Live' || match.strStatus === 'In Progress'
+                  ? 'text-red-600 dark:text-red-400'
+                  : match.strStatus === 'FT' || match.strStatus === 'Match Finished'
+                  ? ''
+                  : ''
+              }`} style={{
+                backgroundColor: match.strStatus === 'Live' || match.strStatus === 'In Progress'
+                  ? 'rgba(220, 38, 38, 0.1)'
+                  : 'var(--color-bg-tertiary)',
+                color: match.strStatus === 'Live' || match.strStatus === 'In Progress'
+                  ? '#DC2626'
+                  : 'var(--color-text-tertiary)'
+              }}>
+                {match.strStatus === 'Live' || match.strStatus === 'In Progress' ? 'LIVE' : match.strStatus || 'FT'}
               </span>
-            </div>
+            </Link>
           ))
         )}
       </div>

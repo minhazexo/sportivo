@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
-import { collection, query, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, Shield, Trash2, Edit2, Search, ChevronLeft } from 'lucide-react';
+import { Users, Trash2, Search, ChevronLeft } from 'lucide-react';
 import { motion } from 'motion/react';
+import apiClient from '../../lib/apiClient';
 
 interface User {
-  uid: string;
+  id: string;
   email: string;
   displayName: string;
   photoURL: string;
@@ -31,34 +30,38 @@ export default function UserManagement() {
 
     async function fetchUsers() {
       try {
-        const q = query(collection(db, 'users'));
-        const snapshot = await getDocs(q);
-        setUsers(snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() })) as User[]);
+        const data = await apiClient.get('/admin/users');
+        setUsers(data || []);
       } catch (error) {
-        console.error("Users fetch error:", error);
+        console.error("[UserManagement] Users fetch error:", error);
       } finally {
         setLoading(false);
       }
     }
-    fetchUsers();
+
+    if (profile?.role === 'admin') {
+      fetchUsers();
+    }
   }, [profile, authLoading, navigate]);
 
   async function changeRole(uid: string, newRole: string) {
     try {
-      await updateDoc(doc(db, 'users', uid), { role: newRole });
-      setUsers(users.map(u => u.uid === uid ? { ...u, role: newRole } : u));
+      await apiClient.put(`/admin/users/${uid}/role`, { role: newRole });
+      setUsers(prev => prev.map(u => u.id === uid ? { ...u, role: newRole } : u));
     } catch (error) {
-      console.error("Role change error:", error);
+      console.error("[UserManagement] Role change error:", error);
+      alert(error instanceof Error ? error.message : "Failed to change role");
     }
   }
 
   async function deleteUser(uid: string) {
-    if (!window.confirm('Delete this user?')) return;
+    if (!window.confirm('Are you absolutely sure you want to delete this user? This will also cascade delete all their notifications.')) return;
     try {
-      await deleteDoc(doc(db, 'users', uid));
-      setUsers(users.filter(u => u.uid !== uid));
+      await apiClient.delete(`/admin/users/${uid}`);
+      setUsers(prev => prev.filter(u => u.id !== uid));
     } catch (error) {
-      console.error("Delete error:", error);
+      console.error("[UserManagement] Delete error:", error);
+      alert(error instanceof Error ? error.message : "Failed to delete user");
     }
   }
 
@@ -67,13 +70,13 @@ export default function UserManagement() {
     u.displayName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (authLoading || loading) return <div className="p-20 text-center uppercase editorial-label text-zinc-400">Loading...</div>;
+  if (authLoading || loading) return <div className="p-20 text-center uppercase editorial-label text-[var(--color-text-tertiary)]">Loading User Accounts...</div>;
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link to="/admin" className="p-2 hover:bg-zinc-100 rounded-lg">
+          <Link to="/admin" className="p-2 hover:bg-[var(--color-card-hover)] rounded-lg">
             <ChevronLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center gap-3">
@@ -85,55 +88,55 @@ export default function UserManagement() {
 
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search users..."
-            className="w-full pl-10 pr-4 py-2 border border-zinc-200 rounded-lg focus:border-accent outline-none"
+            className="w-full pl-10 pr-4 py-2 border border-[var(--color-border-primary)] rounded-lg focus:border-accent outline-none bg-[var(--color-bg-secondary)]"
           />
         </div>
       </div>
 
-      <div className="bg-white border border-zinc-200 overflow-hidden">
+      <div className="bg-[var(--color-card-bg)] border border-[var(--color-border-primary)] overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-zinc-50 border-b border-zinc-100">
+          <thead className="bg-[var(--color-bg-tertiary)] border-b border-[var(--color-border-primary)]">
             <tr>
-              <th className="p-4 editorial-label text-zinc-500">User</th>
-              <th className="p-4 editorial-label text-zinc-500">Email</th>
-              <th className="p-4 editorial-label text-zinc-500">Role</th>
-              <th className="p-4 editorial-label text-zinc-500">Teams</th>
-              <th className="p-4 editorial-label text-zinc-500 text-right">Actions</th>
+              <th className="p-4 editorial-label text-[var(--color-text-secondary)]">User</th>
+              <th className="p-4 editorial-label text-[var(--color-text-secondary)]">Email</th>
+              <th className="p-4 editorial-label text-[var(--color-text-secondary)]">Role</th>
+              <th className="p-4 editorial-label text-[var(--color-text-secondary)]">Teams</th>
+              <th className="p-4 editorial-label text-[var(--color-text-secondary)] text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers.map((user) => (
               <motion.tr
-                key={user.uid}
+                key={user.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="border-b border-zinc-50 hover:bg-zinc-50/50"
+                className="border-b border-[var(--color-border-primary)] hover:bg-[var(--color-card-hover)]"
               >
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-zinc-200 overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-[var(--color-skeleton)] overflow-hidden">
                       {user.photoURL ? (
-                        <img src={user.photoURL} alt={user.displayName} className="w-full h-full object-cover" />
+                        <img src={user.photoURL} alt={user.displayName || 'User'} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-zinc-400">
-                          {user.displayName?.charAt(0) || 'U'}
+                        <div className="w-full h-full flex items-center justify-center text-[var(--color-text-tertiary)] font-bold">
+                          {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
                     <span className="font-medium">{user.displayName || 'Unknown'}</span>
                   </div>
                 </td>
-                <td className="p-4 text-sm text-zinc-500">{user.email}</td>
+                <td className="p-4 text-sm text-[var(--color-text-secondary)]">{user.email}</td>
                 <td className="p-4">
                   <select
                     value={user.role}
-                    onChange={(e) => changeRole(user.uid, e.target.value)}
+                    onChange={(e) => changeRole(user.id, e.target.value)}
                     className="text-xs font-bold uppercase tracking-wider bg-transparent border-none focus:ring-0 cursor-pointer"
                   >
                     <option value="user">User</option>
@@ -141,19 +144,26 @@ export default function UserManagement() {
                     <option value="editor">Editor</option>
                   </select>
                 </td>
-                <td className="p-4 text-sm text-zinc-500">
+                <td className="p-4 text-sm text-[var(--color-text-secondary)]">
                   {user.favoriteTeams?.length || 0} teams
                 </td>
                 <td className="p-4 text-right">
                   <button
-                    onClick={() => deleteUser(user.uid)}
-                    className="p-2 text-zinc-400 hover:text-red-500 transition-colors"
+                    onClick={() => deleteUser(user.id)}
+                    className="p-2 text-[var(--color-text-tertiary)] hover:text-red-500 transition-colors"
+                    title="Delete User"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </td>
               </motion.tr>
             ))}
+            {filteredUsers.length === 0 && (
+              <tr>                  <td colSpan={5} className="p-8 text-center text-[var(--color-text-tertiary)] font-medium">
+                  No users found matching your search.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

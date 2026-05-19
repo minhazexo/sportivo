@@ -2,75 +2,35 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Calendar, Clock, MapPin, Trophy, ChevronLeft, Building2, Users } from 'lucide-react';
+import AdPromo from '../components/ads/AdPromo';
 import { format } from 'date-fns';
 import { getMatch } from '../lib/sportsApi';
-
-interface Match {
-  idEvent: string;
-  strEvent: string;
-  strHomeTeam: string;
-  strAwayTeam: string;
-  strHomeTeamBadge: string;
-  strAwayTeamBadge: string;
-  intHomeScore: string;
-  intAwayScore: string;
-  strTime: string;
-  strStatus: string;
-  dateEvent: string;
-  strVenue: string;
-  strLeague: string;
-  strCountry: string;
-  intRound: string;
-  strHomeFormation: string;
-  strAwayFormation: string;
-  strHomeLineupGoalkeeper: string;
-  strAwayLineupGoalkeeper: string;
-}
-
-const MOCK_MATCH: Match = {
-  idEvent: '1',
-  strEvent: 'Arsenal vs Manchester City',
-  strHomeTeam: 'Arsenal',
-  strAwayTeam: 'Manchester City',
-  strHomeTeamBadge: '',
-  strAwayTeamBadge: '',
-  intHomeScore: '2',
-  intAwayScore: '1',
-  strTime: 'FT',
-  strStatus: 'Finished',
-  dateEvent: '2026-05-15',
-  strVenue: 'Emirates Stadium',
-  strLeague: 'Premier League',
-  strCountry: 'England',
-  intRound: '36',
-  strHomeFormation: '4-3-3',
-  strAwayFormation: '4-2-3-1',
-  strHomeLineupGoalkeeper: '',
-  strAwayLineupGoalkeeper: '',
-};
+import type { Match } from '../lib/sportsApi';
 
 export default function MatchDetail() {
   const { id } = useParams<{ id: string }>();
   const [match, setMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchMatch() {
       setLoading(true);
+      setError(null);
       try {
         if (id) {
           const data = await getMatch(id);
           if (data.events && data.events.length > 0) {
             setMatch(data.events[0]);
           } else {
-            setMatch(MOCK_MATCH);
+            setError("Match not found");
           }
         } else {
-          setMatch(MOCK_MATCH);
+          setError("No match ID provided");
         }
-      } catch (error) {
-        console.error("Match fetch error:", error);
-        setMatch(MOCK_MATCH);
+      } catch (err) {
+        console.error("Match fetch error:", err);
+        setError("Failed to load match details");
       } finally {
         setLoading(false);
       }
@@ -84,9 +44,12 @@ export default function MatchDetail() {
     </div>
   );
 
-  if (!match) return (
+  if (error || !match) return (
     <div className="text-center py-20">
-      <p className="text-zinc-500">Match not found</p>
+      <p className="text-[var(--color-text-secondary)]">{error || "Match not found"}</p>
+      <Link to="/fixtures" className="text-accent hover:underline mt-4 inline-block">
+        Back to Fixtures
+      </Link>
     </div>
   );
 
@@ -96,7 +59,7 @@ export default function MatchDetail() {
     <div className="space-y-8">
       <Link 
         to="/fixtures" 
-        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-accent transition-colors"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-text-tertiary)] hover:text-accent transition-colors"
       >
         <ChevronLeft className="w-4 h-4" /> Back to Fixtures
       </Link>
@@ -142,8 +105,8 @@ export default function MatchDetail() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="bg-white p-6 border border-zinc-200 rounded-2xl">
-          <h3 className="editorial-label text-zinc-400 mb-4">Match Info</h3>
+        <div className="bg-[var(--color-card-bg)] p-6 border border-[var(--color-border-primary)] rounded-2xl">
+          <h3 className="editorial-label text-[var(--color-text-tertiary)] mb-4">Match Info</h3>
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <Calendar className="w-4 h-4 text-accent" />
@@ -164,19 +127,24 @@ export default function MatchDetail() {
           </div>
         </div>
 
-        <div className="bg-white p-6 border border-zinc-200 rounded-2xl">
-          <h3 className="editorial-label text-zinc-400 mb-4 flex items-center gap-2">
+        <div className="bg-[var(--color-card-bg)] p-6 border border-[var(--color-border-primary)] rounded-2xl">
+          <h3 className="editorial-label text-[var(--color-text-tertiary)] mb-4 flex items-center gap-2">
             <Building2 className="w-4 h-4" /> Home Formation
           </h3>
           <div className="text-3xl font-display font-black text-center">{match.strHomeFormation || '4-4-2'}</div>
         </div>
 
-        <div className="bg-white p-6 border border-zinc-200 rounded-2xl">
-          <h3 className="editorial-label text-zinc-400 mb-4 flex items-center gap-2">
+        <div className="bg-[var(--color-card-bg)] p-6 border border-[var(--color-border-primary)] rounded-2xl">
+          <h3 className="editorial-label text-[var(--color-text-tertiary)] mb-4 flex items-center gap-2">
             <Users className="w-4 h-4" /> Away Formation
           </h3>
           <div className="text-3xl font-display font-black text-center">{match.strAwayFormation || '4-4-2'}</div>
         </div>
+      </div>
+
+      {/* Ad below match details */}
+      <div className="mt-8">
+        <AdPromo size="leaderboard" id="match-detail-ad" />
       </div>
     </div>
   );

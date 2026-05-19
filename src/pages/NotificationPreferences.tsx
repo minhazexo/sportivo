@@ -43,7 +43,7 @@ export default function NotificationPreferences() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <Link to="/" className="text-zinc-400 hover:text-accent transition-colors">
+        <Link to="/" className="text-[var(--color-text-tertiary)] hover:text-accent transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex items-center gap-3">
@@ -56,32 +56,32 @@ export default function NotificationPreferences() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3"
+          className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 text-green-700"
         >
           <Check className="w-5 h-5 text-green-600" />
           <span className="text-sm font-bold text-green-700">Preferences saved successfully</span>
         </motion.div>
       )}
 
-      <div className="bg-white rounded-lg border border-zinc-200 divide-y divide-zinc-100">
+      <div className="bg-[var(--color-card-bg)] rounded-lg border border-[var(--color-border-primary)] divide-y divide-[var(--color-border-primary)]">
         {settings.map((setting) => (
           <div
             key={setting.key}
-            className="p-6 flex items-center justify-between hover:bg-zinc-50 transition-colors"
+            className="p-6 flex items-center justify-between hover:bg-[var(--color-card-hover)] transition-colors"
           >
             <div className="flex-1">
               <h3 className="font-bold text-editorial-text">{setting.title}</h3>
-              <p className="text-sm text-zinc-500 mt-1">{setting.description}</p>
+              <p className="text-sm text-[var(--color-text-secondary)] mt-1">{setting.description}</p>
             </div>
             <button
               onClick={() => toggleSetting(setting.key)}
               disabled={saving}
               className={`relative w-12 h-6 rounded-full transition-colors ${
-                preferences[setting.key] ? 'bg-accent' : 'bg-zinc-300'
+                preferences[setting.key] ? 'bg-accent' : 'bg-[var(--color-text-tertiary)]'
               }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-[var(--color-card-bg)] rounded-full shadow transition-transform ${
                   preferences[setting.key] ? 'translate-x-6' : 'translate-x-0'
                 }`}
               />

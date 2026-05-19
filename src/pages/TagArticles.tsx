@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { motion } from 'motion/react';
 import { Tag, ChevronLeft } from 'lucide-react';
+import apiClient from '../lib/apiClient';
 
 interface Article {
   id: string;
@@ -31,16 +30,8 @@ export default function TagArticles() {
     async function fetchArticles() {
       setLoading(true);
       try {
-        const q = query(
-          collection(db, 'articles'),
-          where('status', '==', 'published'),
-          orderBy('createdAt', 'desc'),
-          limit(20)
-        );
-        
-        const snapshot = await getDocs(q);
-        const results = snapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }))
+        const data = await apiClient.get('/articles');
+        const results = (data || [])
           .filter((article: any) => {
             const tags = article.tags || [];
             return tags.some((t: string) => 
@@ -50,7 +41,7 @@ export default function TagArticles() {
         
         setArticles(results);
       } catch (error) {
-        console.error("Tag articles error:", error);
+        console.error("[TagArticles] Failed to fetch tag articles:", error);
       } finally {
         setLoading(false);
       }
@@ -62,7 +53,7 @@ export default function TagArticles() {
     <div className="space-y-8">
       <Link 
         to="/tags" 
-        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-accent transition-colors"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-text-tertiary)] hover:text-accent transition-colors"
       >
         <ChevronLeft className="w-4 h-4" /> All Tags
       </Link>
@@ -74,7 +65,7 @@ export default function TagArticles() {
           </div>
           <div>
             <h1 className="editorial-title text-4xl">{tagName}</h1>
-            <p className="text-zinc-500 text-[13px] font-medium mt-1">
+            <p className="text-[var(--color-text-secondary)] text-[13px] font-medium mt-1">
               {articles.length} articles
             </p>
           </div>
@@ -86,9 +77,9 @@ export default function TagArticles() {
           <div className="animate-spin w-10 h-10 border-4 border-accent border-t-transparent rounded-full mx-auto" />
         </div>
       ) : articles.length === 0 ? (
-        <div className="py-20 text-center bg-zinc-50 rounded-2xl">
-          <Tag className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
-          <p className="text-zinc-500">No articles found with this tag.</p>
+        <div className="py-20 text-center bg-[var(--color-bg-tertiary)] rounded-2xl">
+          <Tag className="w-12 h-12 text-[var(--color-text-tertiary)] mx-auto mb-4" />
+          <p className="text-[var(--color-text-secondary)]">No articles found with this tag.</p>
           <Link to="/" className="text-accent hover:underline mt-4 inline-block">
             Back to Home
           </Link>
@@ -106,7 +97,7 @@ export default function TagArticles() {
               <Link to={`/article/${article.slug}`} className="block">
                 <div className="aspect-video overflow-hidden rounded-xl mb-4">
                   <img 
-                    src={article.thumbnail || 'https://images.unsplash.com/photo-1461896836934- voices-of-the-crowd.jpg?w=800'} 
+                    src={article.thumbnail || 'https://images.unsplash.com/photo-1461896836934-0f065185ebd1?w=800'} 
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
@@ -119,7 +110,7 @@ export default function TagArticles() {
                   <h3 className="font-display font-bold text-xl leading-tight group-hover:text-accent transition-colors">
                     {article.title}
                   </h3>
-                  <p className="text-sm text-zinc-500 line-clamp-2">{article.excerpt}</p>
+                  <p className="text-sm text-[var(--color-text-secondary)] line-clamp-2">{article.excerpt}</p>
                 </div>
               </Link>
             </motion.article>

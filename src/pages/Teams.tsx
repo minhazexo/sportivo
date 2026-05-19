@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Search, Filter, ArrowUpRight, Trophy } from 'lucide-react';
+import AdPromo from '../components/ads/AdPromo';
 import { Link } from 'react-router-dom';
 import { getTeams } from '../lib/sportsApi';
+import type { Team } from '../lib/sportsApi';
 
 export default function Teams() {
-  const [teams, setTeams] = useState<any[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [league, setLeague] = useState('English Premier League');
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +31,7 @@ export default function Teams() {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b-2 border-black pb-6">
         <div>
           <h1 className="editorial-title text-5xl italic tracking-[ -0.05em]">Team Directory</h1>
-          <p className="text-zinc-500 font-medium text-[13px] mt-2">Historical data, active squads and seasonal performance metrics.</p>
+          <p className="font-medium text-[13px] mt-2" style={{ color: 'var(--color-text-secondary)' }}>Historical data, active squads and seasonal performance metrics.</p>
         </div>
         <div className="flex gap-4">
           <select 
@@ -47,41 +49,89 @@ export default function Teams() {
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="editorial-label animate-pulse text-zinc-400">Retrieving Database...</div>
+          <div className="editorial-label animate-pulse" style={{ color: 'var(--color-text-tertiary)' }}>Retrieving Database...</div>
+        </div>
+      ) : teams.length === 0 ? (
+        <div className="text-center py-20">
+          <p className="text-lg" style={{ color: 'var(--color-text-tertiary)' }}>No teams found for {league}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-200 editorial-border">
-          {teams.map((team, idx) => (
-            <Link to={`/team/${team.idTeam}`}>
-            <motion.div
-              key={team.idTeam}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: idx * 0.02 }}
-              className="bg-white p-8 group hover:bg-zinc-50 transition-all cursor-pointer relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-zinc-50 -mr-12 -mt-12 rounded-full group-hover:bg-accent/10 transition-colors" />
-              <div className="relative z-10 space-y-6">
-                <div className="w-16 h-16 grayscale group-hover:grayscale-0 transition-all duration-500">
-                  <img src={team.strTeamBadge} alt={team.strTeam} className="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <h3 className="editorial-title text-xl text-editorial-text group-hover:text-accent transition-colors">{team.strTeam}</h3>
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className="editorial-label text-[9px] text-zinc-400">{team.strStadium}</span>
-                    <span className="text-zinc-200">•</span>
-                    <span className="editorial-label text-[9px] text-zinc-400">EST. {team.intFormedYear}</span>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px editorial-border" style={{ backgroundColor: 'var(--color-border-primary)' }}>
+            {teams.slice(0, Math.ceil(teams.length / 2)).map((team, idx) => (
+              <Link to={`/team/${team.idTeam}`} key={team.idTeam}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: idx * 0.02 }}
+                className="p-8 group transition-all cursor-pointer relative overflow-hidden"
+                style={{ backgroundColor: 'var(--color-card-bg)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-bg-tertiary)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-card-bg)'; }}
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 -mr-12 -mt-12 rounded-full group-hover:bg-accent/10 transition-colors" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+                <div className="relative z-10 space-y-6">
+                  <div className="w-16 h-16 grayscale group-hover:grayscale-0 transition-all duration-500">
+                    <img src={team.strTeamBadge} alt={team.strTeam} className="w-full h-full object-contain" />
+                  </div>
+                  <div>
+                    <h3 className="editorial-title text-xl group-hover:text-accent transition-colors" style={{ color: 'var(--color-text-primary)' }}>{team.strTeam}</h3>
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="editorial-label text-[9px]" style={{ color: 'var(--color-text-tertiary)' }}>{team.strStadium}</span>
+                      <span style={{ color: 'var(--color-border-primary)' }}>•</span>
+                      <span className="editorial-label text-[9px]" style={{ color: 'var(--color-text-tertiary)' }}>EST. {team.intFormedYear}</span>
+                    </div>
+                  </div>
+                  <div className="pt-6 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity" style={{ borderTop: '1px solid var(--color-border-primary)' }}>
+                    <span className="editorial-label text-accent">View Profile</span>
+                    <ArrowUpRight className="w-4 h-4 text-accent" />
                   </div>
                 </div>
-                <div className="pt-6 border-t border-zinc-100 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="editorial-label text-accent">View Profile</span>
-                  <ArrowUpRight className="w-4 h-4 text-accent" />
+              </motion.div>
+            </Link>
+            ))}
+          </div>
+
+          {/* Ad between team grid rows */}
+          <div className="my-8">
+            <AdPromo size="leaderboard" id="teams-inline-ad" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px editorial-border" style={{ backgroundColor: 'var(--color-border-primary)' }}>
+            {teams.slice(Math.ceil(teams.length / 2)).map((team, idx) => (
+              <Link to={`/team/${team.idTeam}`} key={team.idTeam}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: idx * 0.02 }}
+                className="p-8 group transition-all cursor-pointer relative overflow-hidden"
+                style={{ backgroundColor: 'var(--color-card-bg)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-bg-tertiary)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-card-bg)'; }}
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 -mr-12 -mt-12 rounded-full group-hover:bg-accent/10 transition-colors" style={{ backgroundColor: 'var(--color-bg-tertiary)' }} />
+                <div className="relative z-10 space-y-6">
+                  <div className="w-16 h-16 grayscale group-hover:grayscale-0 transition-all duration-500">
+                    <img src={team.strTeamBadge} alt={team.strTeam} className="w-full h-full object-contain" />
+                  </div>
+                  <div>
+                    <h3 className="editorial-title text-xl group-hover:text-accent transition-colors" style={{ color: 'var(--color-text-primary)' }}>{team.strTeam}</h3>
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="editorial-label text-[9px]" style={{ color: 'var(--color-text-tertiary)' }}>{team.strStadium}</span>
+                      <span style={{ color: 'var(--color-border-primary)' }}>•</span>
+                      <span className="editorial-label text-[9px]" style={{ color: 'var(--color-text-tertiary)' }}>EST. {team.intFormedYear}</span>
+                    </div>
+                  </div>
+                  <div className="pt-6 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity" style={{ borderTop: '1px solid var(--color-border-primary)' }}>
+                    <span className="editorial-label text-accent">View Profile</span>
+                    <ArrowUpRight className="w-4 h-4 text-accent" />
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </Link>
-          ))}
-        </div>
+              </motion.div>
+            </Link>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

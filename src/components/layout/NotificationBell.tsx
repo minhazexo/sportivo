@@ -38,7 +38,7 @@ export default function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-zinc-400 hover:text-accent transition-colors"
+        className="relative p-2 text-[var(--color-text-tertiary)] hover:text-accent transition-colors"
         aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`}
       >
         <Bell className="w-5 h-5" />
@@ -55,10 +55,11 @@ export default function NotificationBell() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-zinc-200 z-50 max-h-96 overflow-hidden"
+            className="absolute right-0 mt-2 w-80 rounded-lg shadow-xl border z-50 max-h-96 overflow-hidden"
+            style={{ backgroundColor: 'var(--color-card-bg)', borderColor: 'var(--color-border-primary)' }}
           >
-            <div className="p-4 border-b border-zinc-200 flex items-center justify-between">
-              <h3 className="font-bold text-sm">Notifications</h3>
+            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--color-border-primary)' }}>
+              <h3 className="font-bold text-sm" style={{ color: 'var(--color-text-primary)' }}>Notifications</h3>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
                   <button
@@ -70,7 +71,7 @@ export default function NotificationBell() {
                 )}
                 <Link
                   to="/notifications/preferences"
-                  className="text-zinc-400 hover:text-accent transition-colors"
+                  className="text-[var(--color-text-tertiary)] hover:text-accent transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   <Settings className="w-4 h-4" />
@@ -80,16 +81,21 @@ export default function NotificationBell() {
 
             <div className="overflow-y-auto max-h-80">
               {loading ? (
-                <div className="p-4 text-center text-zinc-400 text-sm">Loading...</div>
+                <div className="p-4 text-center text-[var(--color-text-tertiary)] text-sm">Loading...</div>
               ) : notifications.length === 0 ? (
-                <div className="p-8 text-center text-zinc-400 text-sm">No notifications</div>
+                <div className="p-8 text-center text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No notifications</div>
               ) : (
                 notifications.slice(0, 10).map((notification) => (
                   <div
                     key={notification.id}
-                    className={`p-4 border-b border-zinc-100 hover:bg-zinc-50 transition-colors cursor-pointer ${
-                      !notification.read ? 'bg-zinc-50' : ''
+                    className={`p-4 border-b transition-colors cursor-pointer ${
+                      !notification.read ? '' : ''
                     }`}
+                    style={{ 
+                      borderColor: 'var(--color-border-primary)',
+                      backgroundColor: !notification.read ? 'var(--color-bg-tertiary)' : 'transparent',
+                      color: 'var(--color-text-primary)'
+                    }}
                     onClick={() => {
                       markAsRead(notification.id);
                       if (notification.link) {
@@ -100,14 +106,14 @@ export default function NotificationBell() {
                     <div className="flex items-start gap-3">
                       <span className="text-lg">{getTypeIcon(notification.type)}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-editorial-text truncate">
+                        <p className="text-sm font-bold truncate" style={{ color: 'var(--color-text-primary)' }}>
                           {notification.title}
                         </p>
-                        <p className="text-xs text-zinc-500 mt-1 line-clamp-2">
+                        <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--color-text-secondary)' }}>
                           {notification.message}
                         </p>
-                        <span className="text-[10px] text-zinc-400 mt-2 block">
-                          {formatDistanceToNow(notification.createdAt?.toDate?.() || new Date())} ago
+                        <span className="text-[10px] mt-2 block" style={{ color: 'var(--color-text-tertiary)' }}>
+                          {formatDistanceToNow(new Date(notification.createdAt))} ago
                         </span>
                       </div>
                       {!notification.read && (

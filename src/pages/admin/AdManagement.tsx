@@ -72,7 +72,7 @@ export default function AdManagement() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link to="/admin" className="p-2 hover:bg-zinc-100 rounded-lg">
+          <Link to="/admin" className="p-2 hover:bg-[var(--color-card-hover)] rounded-lg">
             <ChevronLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center gap-3">
@@ -89,25 +89,25 @@ export default function AdManagement() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white p-6 border border-zinc-200 rounded-2xl space-y-4">
+        <form onSubmit={handleSubmit} className="bg-[var(--color-card-bg)] p-6 border border-[var(--color-border-primary)] rounded-2xl space-y-4">
           <h3 className="editorial-title text-xl">New Ad Placement</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="editorial-label text-zinc-400 mb-1 block">Ad Name</label>
+              <label className="editorial-label text-[var(--color-text-tertiary)] mb-1 block">Ad Name</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full p-2 border border-zinc-200 rounded-lg"
+                className="w-full p-2 border border-[var(--color-border-primary)] rounded-lg bg-[var(--color-bg-secondary)]"
                 required
               />
             </div>
             <div>
-              <label className="editorial-label text-zinc-400 mb-1 block">Location</label>
+              <label className="editorial-label text-[var(--color-text-tertiary)] mb-1 block">Location</label>
               <select
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full p-2 border border-zinc-200 rounded-lg"
+                className="w-full p-2 border border-[var(--color-border-primary)] rounded-lg bg-[var(--color-bg-secondary)]"
               >
                 <option value="header">Header</option>
                 <option value="sidebar">Sidebar</option>
@@ -116,22 +116,22 @@ export default function AdManagement() {
               </select>
             </div>
             <div>
-              <label className="editorial-label text-zinc-400 mb-1 block">Ad Client (pub-)</label>
+              <label className="editorial-label text-[var(--color-text-tertiary)] mb-1 block">Ad Client (pub-)</label>
               <input
                 type="text"
                 value={formData.adClient}
                 onChange={(e) => setFormData({ ...formData, adClient: e.target.value })}
-                className="w-full p-2 border border-zinc-200 rounded-lg"
+                className="w-full p-2 border border-[var(--color-border-primary)] rounded-lg bg-[var(--color-bg-secondary)]"
                 required
               />
             </div>
             <div>
-              <label className="editorial-label text-zinc-400 mb-1 block">Ad Slot ID</label>
+              <label className="editorial-label text-[var(--color-text-tertiary)] mb-1 block">Ad Slot ID</label>
               <input
                 type="text"
                 value={formData.adSlot}
                 onChange={(e) => setFormData({ ...formData, adSlot: e.target.value })}
-                className="w-full p-2 border border-zinc-200 rounded-lg"
+                className="w-full p-2 border border-[var(--color-border-primary)] rounded-lg bg-[var(--color-bg-secondary)]"
                 required
               />
             </div>
@@ -143,30 +143,30 @@ export default function AdManagement() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-6 border border-zinc-200">
-          <span className="editorial-label text-zinc-400">Total Impressions</span>
+        <div className="bg-[var(--color-card-bg)] p-6 border border-[var(--color-border-primary)]">
+          <span className="editorial-label text-[var(--color-text-tertiary)]">Total Impressions</span>
           <p className="text-4xl font-display font-black mt-2">{totalImpressions.toLocaleString()}</p>
         </div>
-        <div className="bg-white p-6 border border-zinc-200">
-          <span className="editorial-label text-zinc-400">Total Clicks</span>
+        <div className="bg-[var(--color-card-bg)] p-6 border border-[var(--color-border-primary)]">
+          <span className="editorial-label text-[var(--color-text-tertiary)]">Total Clicks</span>
           <p className="text-4xl font-display font-black mt-2">{totalClicks.toLocaleString()}</p>
         </div>
-        <div className="bg-white p-6 border border-zinc-200">
-          <span className="editorial-label text-zinc-400">Average CTR</span>
+        <div className="bg-[var(--color-card-bg)] p-6 border border-[var(--color-border-primary)]">
+          <span className="editorial-label text-[var(--color-text-tertiary)]">Average CTR</span>
           <p className="text-4xl font-display font-black mt-2">{avgCTR}%</p>
         </div>
       </div>
 
-      <div className="bg-white border border-zinc-200 overflow-hidden">
+      <div className="bg-[var(--color-card-bg)] border border-[var(--color-border-primary)] overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-zinc-50 border-b border-zinc-100">
+          <thead className="bg-[var(--color-bg-tertiary)] border-b border-[var(--color-border-primary)]">
             <tr>
-              <th className="p-4 editorial-label text-zinc-500">Ad Name</th>
-              <th className="p-4 editorial-label text-zinc-500">Location</th>
-              <th className="p-4 editorial-label text-zinc-500">Ad Client</th>
-              <th className="p-4 editorial-label text-zinc-500">Status</th>
-              <th className="p-4 editorial-label text-zinc-500">Stats</th>
-              <th className="p-4 editorial-label text-zinc-500 text-right">Actions</th>
+              <th className="p-4 editorial-label text-[var(--color-text-secondary)]">Ad Name</th>
+              <th className="p-4 editorial-label text-[var(--color-text-secondary)]">Location</th>
+              <th className="p-4 editorial-label text-[var(--color-text-secondary)]">Ad Client</th>
+              <th className="p-4 editorial-label text-[var(--color-text-secondary)]">Status</th>
+              <th className="p-4 editorial-label text-[var(--color-text-secondary)]">Stats</th>
+              <th className="p-4 editorial-label text-[var(--color-text-secondary)] text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -175,31 +175,31 @@ export default function AdManagement() {
                 key={ad.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="border-b border-zinc-50 hover:bg-zinc-50/50"
+                className="border-b border-[var(--color-border-primary)] hover:bg-[var(--color-card-hover)]"
               >
                 <td className="p-4 font-medium">{ad.name}</td>
                 <td className="p-4">
-                  <span className="editorial-label text-[9px] bg-zinc-100 px-2 py-1">{ad.location}</span>
+                  <span className="editorial-label text-[9px] bg-[var(--color-bg-tertiary)] px-2 py-1">{ad.location}</span>
                 </td>
-                <td className="p-4 text-sm text-zinc-500 font-mono">{ad.adClient}</td>
+                <td className="p-4 text-sm text-[var(--color-text-secondary)] font-mono">{ad.adClient}</td>
                 <td className="p-4">
                   <button
                     onClick={() => toggleAd(ad.id)}
-                    className={`flex items-center gap-1 text-xs font-bold uppercase ${ad.active ? 'text-green-600' : 'text-zinc-400'}`}
+                    className={`flex items-center gap-1 text-xs font-bold uppercase ${ad.active ? 'text-green-600' : 'text-[var(--color-text-tertiary)]'}`}
                   >
                     {ad.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                     {ad.active ? 'Active' : 'Paused'}
                   </button>
                 </td>
                 <td className="p-4 text-sm">
-                  <span className="text-zinc-500">{ad.impressions.toLocaleString()} imp</span>
-                  <span className="text-zinc-300 mx-2">•</span>
+                  <span className="text-[var(--color-text-secondary)]">{ad.impressions.toLocaleString()} imp</span>
+                  <span className="text-[var(--color-text-tertiary)] mx-2">•</span>
                   <span className="text-accent">{ad.clicks.toLocaleString()} clicks</span>
                 </td>
                 <td className="p-4 text-right">
                   <button
                     onClick={() => deleteAd(ad.id)}
-                    className="p-2 text-zinc-400 hover:text-red-500 transition-colors"
+                    className="p-2 text-[var(--color-text-tertiary)] hover:text-red-500 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

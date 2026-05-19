@@ -1,0 +1,1 @@
+add a feature where in admin panel can auto create article 10 article at a time. also try to create pages for each needs. 

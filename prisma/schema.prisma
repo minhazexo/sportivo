@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String                  @id @default(uuid())
+  email              String                  @unique
+  displayName        String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @default(now()) @updatedAt
+  bookmarkedArticles String[]                @default([])
+  favoriteTeams      String[]                @default([])
+  photoURL           String?
+  role               String                  @default("user")
+  password           String?
+  preferences        NotificationPreference?
+  notifications      Notification[]
+  refreshTokens      RefreshToken[]
+
+  @@map("users")
+}
+
+model Article {
+  id          String    @id @default(uuid())
+  title       String
+  slug        String    @unique
+  content     String
+  excerpt     String?
+  category    String?
+  thumbnail   String?
+  authorId    String?
+  authorName  String?
+  tags        String[]  @default([])
+  status      String    @default("draft")
+  publishedAt DateTime?
+  views       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+
+  @@map("articles")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  createdAt DateTime @default(now())
+  link      String?
+  read      Boolean  @default(false)
+  type      String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  matchStartReminders Boolean  @default(true)
+  teamNewsUpdates     Boolean  @default(true)
+  articleAlerts       Boolean  @default(true)
+  systemNotifications Boolean  @default(true)
+  updatedAt           DateTime @default(now()) @updatedAt
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+model CachedTeam {
+  id            String   @id
+  name          String
+  shortName     String?
+  alternateName String?
+  formedYear    String?
+  sport         String?
+  league        String?
+  leagueId      String?
+  stadium       String?
+  stadiumThumb  String?
+  stadiumLoc    String?
+  website       String?
+  facebook      String?
+  twitter       String?
+  instagram     String?
+  youtube       String?
+  descriptionEN String?
+  badge         String?
+  jersey        String?
+  logo          String?
+  banner        String?
+  country       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  @@index([leagueId])
+  @@map("cached_teams")
+}
+
+model CachedMatch {
+  id           String   @id
+  leagueId     String
+  leagueName   String
+  homeTeamId   String
+  awayTeamId   String
+  homeTeamName String
+  awayTeamName String
+  homeScore    String?
+  awayScore    String?
+  status       String?
+  date         String
+  time         String?
+  round        String?
+  spectators   String?
+  thumb        String?
+  video        String?
+  sport        String   @default("soccer")
+  type         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  @@index([leagueId])
+  @@index([type])
+  @@index([date])
+  @@map("cached_matches")
+}
+
+model CachedStanding {
+  id              String   @id @default(uuid())
+  leagueId        String
+  teamId          String
+  teamName        String
+  teamBadge       String?
+  played          Int
+  won             Int
+  drawn           Int
+  lost            Int
+  goalsFor        Int
+  goalsAgainst    Int
+  goalsDifference Int
+  points          Int
+  rank            Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@unique([leagueId, teamId])
+  @@index([leagueId])
+  @@map("cached_standings")
+}
+
+model CachedNews {
+  id          String   @id
+  title       String
+  description String?
+  content     String?
+  image       String?
+  url         String
+  source      String
+  query       String
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  @@index([query])
+  @@map("cached_news")
+}
+
+model CacheMetadata {
+  key       String   @id
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("cache_metadata")
+}
+
+model AdPlacement {
+  id          String   @id @default(uuid())
+  name        String
+  location    String
+  adClient    String
+  adSlot      String
+  active      Boolean  @default(true)
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  @@map("ad_placements")
+}
+
+model PageHit {
+  id        String   @id @default(uuid())
+  path      String
+  visitorId String
+  source    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([visitorId])
+  @@index([createdAt])
+  @@map("page_hits")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([token])
+  @@map("password_reset_tokens")
+}

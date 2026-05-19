@@ -95,12 +95,12 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-editorial-text">{toast.title}</p>
         {toast.message && (
-          <p className="text-xs text-zinc-500 mt-1">{toast.message}</p>
+          <p className="text-xs text-[var(--color-text-tertiary)] mt-1">{toast.message}</p>
         )}
       </div>
       <button
         onClick={onRemove}
-        className="text-zinc-400 hover:text-zinc-600 transition-colors shrink-0"
+        className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-colors shrink-0"
       >
         <X className="w-4 h-4" />
       </button>

@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { collection, query, where, orderBy, limit, getDocs, addDoc, updateDoc, doc, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { useAuth } from './AuthContext';
+import apiClient from '../lib/apiClient';
 
 export interface Notification {
   id: string;
@@ -10,8 +9,15 @@ export interface Notification {
   title: string;
   message: string;
   read: boolean;
-  createdAt: any;
+  createdAt: string;
   link?: string;
+}
+
+export interface NotificationPreferences {
+  matchStartReminders: boolean;
+  teamNewsUpdates: boolean;
+  articleAlerts: boolean;
+  systemNotifications: boolean;
 }
 
 interface NotificationContextType {
@@ -22,13 +28,7 @@ interface NotificationContextType {
   markAllAsRead: () => Promise<void>;
   preferences: NotificationPreferences;
   updatePreferences: (prefs: Partial<NotificationPreferences>) => Promise<void>;
-}
-
-export interface NotificationPreferences {
-  matchStartReminders: boolean;
-  teamNewsUpdates: boolean;
-  articleAlerts: boolean;
-  systemNotifications: boolean;
+  refreshNotifications: () => Promise<void>;
 }
 
 const defaultPreferences: NotificationPreferences = {
@@ -48,6 +48,33 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return;
+    try {
+      const data = await apiClient.get('/notifications');
+      setNotifications(data || []);
+    } catch (error) {
+      console.error('[NotificationContext] Failed to fetch notifications:', error);
+    }
+  }, [user]);
+
+  const fetchPreferences = useCallback(async () => {
+    if (!user) return;
+    try {
+      const data = await apiClient.get('/notifications/preferences');
+      if (data) {
+        setPreferences({
+          matchStartReminders: !!data.matchStartReminders,
+          teamNewsUpdates: !!data.teamNewsUpdates,
+          articleAlerts: !!data.articleAlerts,
+          systemNotifications: !!data.systemNotifications,
+        });
+      }
+    } catch (error) {
+      console.error('[NotificationContext] Failed to fetch notification preferences:', error);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (!user) {
       setNotifications([]);
@@ -55,102 +82,61 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       return;
     }
 
-    const path = 'notifications';
-    const q = query(
-      collection(db, path),
-      where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc'),
-      limit(50)
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Notification[];
-      setNotifications(data);
-      setLoading(false);
-    }, (error) => {
-      try {
-        handleFirestoreError(error, OperationType.LIST, path);
-      } catch (e) {
-        console.error("Failed to handle firestore error", e);
-      }
-      console.error("Error fetching notifications:", error);
+    setLoading(true);
+    Promise.all([fetchNotifications(), fetchPreferences()]).finally(() => {
       setLoading(false);
     });
 
-    return () => unsubscribe();
-  }, [user]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    async function fetchPreferences() {
-      try {
-        const q = query(
-          collection(db, 'notificationPreferences'),
-          where('userId', '==', user.uid),
-          limit(1)
-        );
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          const prefs = snapshot.docs[0].data() as NotificationPreferences;
-          setPreferences({ ...defaultPreferences, ...prefs });
-        }
-      } catch (error) {
-        console.error("Error fetching notification preferences:", error);
-      }
-    }
-
-    fetchPreferences();
-  }, [user]);
+    // Optional: Poll for new notifications every 60 seconds to keep UI fresh without overloading Neon
+    const interval = setInterval(fetchNotifications, 60000);
+    return () => clearInterval(interval);
+  }, [user, fetchNotifications, fetchPreferences]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
     if (!user) return;
+    // Optimistic UI update
+    setNotifications(prev =>
+      prev.map(n => (n.id === notificationId ? { ...n, read: true } : n))
+    );
     try {
-      const notificationRef = doc(db, 'notifications', notificationId);
-      await updateDoc(notificationRef, { read: true });
+      await apiClient.put(`/notifications/${notificationId}/read`, {});
     } catch (error) {
-      console.error("Error marking notification as read:", error);
+      console.error('[NotificationContext] Error marking notification as read:', error);
+      // Revert on error
+      fetchNotifications();
     }
-  }, [user]);
+  }, [user, fetchNotifications]);
 
   const markAllAsRead = useCallback(async () => {
     if (!user) return;
+    // Optimistic UI update
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     try {
-      const unreadNotifications = notifications.filter(n => !n.read);
-      const updatePromises = unreadNotifications.map(n => 
-        updateDoc(doc(db, 'notifications', n.id), { read: true })
-      );
-      await Promise.all(updatePromises);
+      await apiClient.put('/notifications/read-all', {});
     } catch (error) {
-      console.error("Error marking all notifications as read:", error);
+      console.error('[NotificationContext] Error marking all notifications as read:', error);
+      fetchNotifications();
     }
-  }, [user, notifications]);
+  }, [user, fetchNotifications]);
 
   const updatePreferences = useCallback(async (prefs: Partial<NotificationPreferences>) => {
     if (!user) return;
+    setPreferences(prev => ({ ...prev, ...prefs }));
     try {
-      const q = query(
-        collection(db, 'notificationPreferences'),
-        where('userId', '==', user.uid),
-        limit(1)
-      );
-      const snapshot = await getDocs(q);
-      
-      const newPrefs = { ...preferences, ...prefs, userId: user.uid, updatedAt: serverTimestamp() };
-      
-      if (!snapshot.empty) {
-        await updateDoc(doc(db, 'notificationPreferences', snapshot.docs[0].id), newPrefs);
-      } else {
-        await addDoc(collection(db, 'notificationPreferences'), newPrefs);
+      const updated = await apiClient.put('/notifications/preferences', prefs);
+      if (updated) {
+        setPreferences({
+          matchStartReminders: !!updated.matchStartReminders,
+          teamNewsUpdates: !!updated.teamNewsUpdates,
+          articleAlerts: !!updated.articleAlerts,
+          systemNotifications: !!updated.systemNotifications,
+        });
       }
-      setPreferences(prev => ({ ...prev, ...prefs }));
     } catch (error) {
-      console.error("Error updating notification preferences:", error);
+      console.error('[NotificationContext] Error updating notification preferences:', error);
+      fetchPreferences();
     }
-  }, [user, preferences]);
+  }, [user, fetchPreferences]);
 
   return (
     <NotificationContext.Provider value={{
@@ -161,6 +147,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       markAllAsRead,
       preferences,
       updatePreferences,
+      refreshNotifications: fetchNotifications,
     }}>
       {children}
     </NotificationContext.Provider>

@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "build:migration": "esbuild scripts/migrate-firebase-to-neon.ts --target=node18 --bundle --platform=node --outfile=scripts/migrate-firebase-to-neon.js"
+  }
+}

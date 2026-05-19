@@ -2,31 +2,279 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* ─── Tailwind v4 Dark Mode Variant ─────────────────────────────────────── */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Theme CSS Custom Properties ────────────────────────────────────────── */
+:root {
+  --color-bg-primary: #F9FAFB;
+  --color-bg-secondary: #FFFFFF;
+  --color-bg-tertiary: #F3F4F6;
+  --color-text-primary: #111827;
+  --color-text-secondary: #4B5563;
+  --color-text-tertiary: #9CA3AF;
+  --color-border-primary: #E5E7EB;
+  --color-border-secondary: #D1D5DB;
+  --color-card-bg: #FFFFFF;
+  --color-card-hover: #F9FAFB;
+  --color-navbar-bg: #0F172A;
+  --color-navbar-text: #D1D5DB;
+  --color-hero-bg: #0F172A;
+  --color-header-bg: #F9FAFB;
+  --color-header-text: #111827;
+  --color-standings-bg: #FFFFFF;
+  --color-standings-row: #F9FAFB;
+  --color-skeleton: #E5E7EB;
+  --color-premium-bg: #0F172A;
+  --color-footer-bg: #FFFFFF;
+  --color-overlay: rgba(0,0,0,0.85);
+}
+
+.dark {
+  --color-bg-primary: #0F172A;
+  --color-bg-secondary: #1E293B;
+  --color-bg-tertiary: #1E293B;
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #94A3B8;
+  --color-text-tertiary: #64748B;
+  --color-border-primary: #334155;
+  --color-border-secondary: #475569;
+  --color-card-bg: #1E293B;
+  --color-card-hover: #334155;
+  --color-navbar-bg: #020617;
+  --color-navbar-text: #94A3B8;
+  --color-hero-bg: #020617;
+  --color-header-bg: #0F172A;
+  --color-header-text: #F1F5F9;
+  --color-standings-bg: #1E293B;
+  --color-standings-row: #0F172A;
+  --color-skeleton: #334155;
+  --color-premium-bg: #020617;
+  --color-footer-bg: #1E293B;
+  --color-editorial-bg: #0F172A;
+  --color-editorial-text: #F1F5F9;
+  --color-editorial-bg-secondary: #1E293B;
+  --color-overlay: rgba(0,0,0,0.9);
+}
+
+/* ─── Smooth Theme Transitions ──────────────────────────────────────────── */
+html,
+html *,
+html *::before,
+html *::after {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: none !important;
+}
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   
-  --color-accent: #F27D26;
-  --color-editorial-bg: #F4F4F4;
-  --color-editorial-text: #1A1A1A;
+  --color-accent: #DC2626;
+  --color-accent-dark: #B91C1C;
+  --color-accent-light: #FCA5A5;
+  --color-editorial-bg: #F9FAFB;
+  --color-editorial-text: #111827;
+  --color-editorial-bg-secondary: #FFFFFF;
+  --color-espn-dark: #0F172A;
+  --color-espn-card: #FFFFFF;
+  --color-espn-border: #E5E7EB;
+  --color-espn-hover: #F3F4F6;
 }
 
 @layer base {
   body {
-    @apply bg-editorial-bg text-editorial-text antialiased;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-family: 'Inter', system-ui, sans-serif;
+    @apply antialiased;
   }
 }
 
 @layer utilities {
+  /* Old editorial classes kept for backward compatibility */
   .editorial-border {
-    @apply border border-zinc-300;
+    border-color: var(--color-border-primary);
+    border-width: 1px;
+    border-style: solid;
   }
   .editorial-title {
-    @apply font-display font-black uppercase italic tracking-tighter;
+    @apply font-sans font-extrabold uppercase italic tracking-tighter;
+    color: var(--color-text-primary);
   }
   .editorial-label {
     @apply text-[10px] font-black uppercase tracking-[0.2em];
   }
+
+  /* New ESPN-inspired classes */
+  .espn-border {
+    border-color: var(--color-border-primary);
+  }
+  .espn-title {
+    @apply font-sans font-extrabold tracking-tight;
+    color: var(--color-text-primary);
+  }
+  .espn-headline {
+    @apply font-sans font-bold leading-tight;
+    color: var(--color-text-primary);
+  }
+  .espn-label {
+    @apply text-[11px] font-bold uppercase tracking-wide;
+  }
+  .espn-meta {
+    @apply text-[11px] font-medium;
+    color: var(--color-text-tertiary);
+  }
+  .espn-score-label {
+    @apply text-[10px] font-semibold uppercase tracking-wider;
+  }
+  .espn-card {
+    background-color: var(--color-card-bg);
+    border-color: var(--color-border-primary);
+    overflow: hidden;
+  }
+  .espn-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: var(--color-border-secondary);
+  }
+  .dark .espn-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border-color: #475569;
+  }
+  .espn-tag {
+    @apply inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded;
+  }
+  .hero-overlay {
+    background: linear-gradient(to top, var(--color-overlay) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%);
+  }
+  .score-ticker-gradient {
+    background: linear-gradient(to right, #020617, #0F172A, #020617);
+  }
+}
+
+/* Custom scrollbar for score ticker */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Shimmer animation for loading states */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Hover underline animation for nav links */
+.nav-underline {
+  position: relative;
+}
+.nav-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #DC2626;
+  transition: width 0.2s ease;
+}
+.nav-underline:hover::after {
+  width: 100%;
+}
+
+/* Article card image zoom */
+.card-img-zoom {
+  transition: transform 0.4s ease;
+}
+.group:hover .card-img-zoom {
+  transform: scale(1.05);
+}
+
+/* Section header with red bar (ESPN style) */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.section-header::before {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 22px;
+  background-color: #DC2626;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Pull quote style */
+.pull-quote {
+  @apply text-2xl font-bold leading-tight border-l-4 border-accent pl-5 my-6;
+  color: var(--color-text-primary);
+}
+
+/* Standings form indicator dots */
+.form-dot-win {
+  @apply w-2 h-2 rounded-full bg-green-500;
+}
+.form-dot-draw {
+  @apply w-2 h-2 rounded-full bg-yellow-400;
+}
+.form-dot-loss {
+  @apply w-2 h-2 rounded-full bg-red-500;
+}
+
+/* Table styles */
+.standings-table th {
+  @apply text-[10px] font-semibold uppercase tracking-wider py-2 px-2 border-b;
+  color: var(--color-text-tertiary);
+  border-color: var(--color-border-primary);
+}
+.standings-table td {
+  @apply text-[13px] py-2.5 px-2 border-b;
+  border-color: var(--color-border-primary);
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-grid .hero-main {
+    min-height: 280px;
+  }
+}
+
+/* Dark overlay for hero images */
+.hero-gradient {
+  background: linear-gradient(to top, rgba(2,6,23,0.95) 0%, rgba(15,23,42,0.4) 60%, rgba(15,23,42,0.1) 100%);
+}
+
+.secondary-gradient {
+  background: linear-gradient(to top, rgba(2,6,23,0.9) 0%, rgba(15,23,42,0.3) 70%, transparent 100%);
+}
+
+/* Custom scrollbar for dark mode */
+.dark ::-webkit-scrollbar-track {
+  background: #1E293B;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748B;
 }
 

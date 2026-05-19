@@ -25,6 +25,7 @@ import ArticleEditor from './pages/admin/ArticleEditor';
 import UserManagement from './pages/admin/UserManagement';
 import AdManagement from './pages/admin/AdManagement';
 import AnalyticsDashboard from './pages/admin/AnalyticsDashboard';
+import AdminSettings from './pages/admin/AdminSettings';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Analytics from './components/analytics/Analytics';
@@ -39,13 +40,14 @@ export default function App() {
         <NotificationProvider>
           <ToastProvider>
             <Router>
-              <div className="min-h-screen bg-slate-50 font-sans">
+              <div className="min-h-screen font-sans" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
                 <Navbar />
                 <main className="container mx-auto px-4 py-8">
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/article/:slug" element={<ArticleDetail />} />
                     <Route path="/leagues" element={<Leagues />} />
+                    <Route path="/fixtures" element={<Fixtures />} />
                     <Route path="/leagues/:id/fixtures" element={<Fixtures />} />
                     <Route path="/leagues/:id/standings" element={<Standings />} />
                     <Route path="/standings" element={<Standings />} />
@@ -63,6 +65,7 @@ export default function App() {
                     <Route path="/admin/users" element={<UserManagement />} />
                     <Route path="/admin/ads" element={<AdManagement />} />
                     <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
+                    <Route path="/admin/settings" element={<AdminSettings />} />
                   </Routes>
                 </main>
                 <Footer />
