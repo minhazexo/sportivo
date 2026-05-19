@@ -1,0 +1,49 @@
+name: Daily Sports Data Ingestion
+
+on:
+  schedule:
+    # Every 6 hours: midnight, 6am, noon, 6pm UTC
+    - cron: '0 0,6,12,18 * * *'
+  workflow_dispatch:
+    # Allows manual trigger from GitHub Actions tab
+    inputs:
+      mode:
+        description: 'Ingestion mode'
+        required: true
+        default: 'quick'
+        type: choice
+        options:
+          - quick
+          - full
+          - sports
+          - news
+
+jobs:
+  ingest:
+    name: Ingest Sports Data
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Run data ingestion (${{ github.event.inputs.mode || 'quick' }})
+        run: npx tsx scripts/ingest-data.ts --${{ github.event.inputs.mode || 'quick' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEWSAPI_API_KEY: ${{ secrets.NEWSAPI_API_KEY }}
