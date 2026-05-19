@@ -9,6 +9,12 @@ import fs from "fs";
 import prisma from "./src/lib/prisma";
 import { getArticles, getArticleBySlug } from "./src/lib/articles";
 
+const log = (msg: string, ...args: unknown[]) => {
+  console.log(`[${new Date().toISOString()}] ${msg}`, ...args);
+};
+
+dotenv.config();
+
 // ----------------------------------------------------
 // File Upload Configuration
 // ----------------------------------------------------
@@ -52,12 +58,6 @@ const upload = multer({
     }
   },
 });
-
-dotenv.config();
-
-const log = (msg: string, ...args: unknown[]) => {
-  console.log(`[${new Date().toISOString()}] ${msg}`, ...args);
-};
 
 // ----------------------------------------------------
 // Input Validation & Sanitization Helpers
