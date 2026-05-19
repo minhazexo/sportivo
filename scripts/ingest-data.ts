@@ -111,6 +111,10 @@ async function fetchText(url: string): Promise<string> {
   return response.text();
 }
 
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SECTION 1: TheSportsDB — Scores & Fixtures
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -185,6 +189,9 @@ async function ingestScores() {
         } catch (err) {
           // Skip rounds that fail quietly
         }
+
+        // Rate limiting: wait 350ms between each round's API call
+        await delay(350);
       }
     }
 
@@ -240,6 +247,9 @@ async function ingestScores() {
         } catch (err) {
           // Skip rounds that fail
         }
+
+        // Rate limiting: wait 350ms between each round's API call
+        await delay(350);
       }
     }
   }
@@ -310,6 +320,9 @@ async function ingestStandings() {
       log(`⚠️  Failed to fetch standings for ${league.name}: ${err}`);
       failed++;
     }
+
+    // Rate limiting: wait 500ms between each league's API call
+    await delay(500);
   }
 
   progress('Standings', saved, failed);
@@ -394,6 +407,9 @@ async function ingestTeams() {
       log(`⚠️  Failed to fetch teams for ${league.name}: ${err}`);
       failed++;
     }
+
+    // Rate limiting: wait 500ms between each league's API call
+    await delay(500);
   }
 
   progress('Teams', saved, failed);
@@ -682,10 +698,10 @@ export async function runFullIngestion(): Promise<IngestResult> {
   log('═══════════════════════════════════════════════════════════════\n');
 
   try {
-    // Run all ingestions in sequence to avoid rate limiting
-    const sports = await ingestScores();
+    // Run ingestions in order: standings + teams first (fewer calls, before rate limit hits)
     const standings = await ingestStandings();
     const teams = await ingestTeams();
+    const sports = await ingestScores();
     const news = await ingestRssNews();
     const newsApi = await ingestNewsApi();
     const matchReports = await generateMatchReports();
