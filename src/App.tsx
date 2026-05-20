@@ -19,6 +19,7 @@ import Standings from './pages/Standings';
 import TeamDetail from './pages/TeamDetail';
 import MatchDetail from './pages/MatchDetail';
 import Bookmarks from './pages/Bookmarks';
+import WorldCup from './pages/WorldCup';
 import NotificationPreferences from './pages/NotificationPreferences';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ArticleEditor from './pages/admin/ArticleEditor';
@@ -54,6 +55,7 @@ export default function App() {
                     <Route path="/teams" element={<Teams />} />
                     <Route path="/team/:id" element={<TeamDetail />} />
                     <Route path="/match/:id" element={<MatchDetail />} />
+                    <Route path="/world-cup" element={<WorldCup />} />
                     <Route path="/bookmarks" element={<Bookmarks />} />
                     <Route path="/search" element={<Search />} />
                     <Route path="/tags" element={<Tags />} />

@@ -57,5 +57,9 @@ export async function getSportsNews(query: string = 'sports news', limit: number
   return apiClient.get(`/news`, { q: query, limit });
 }
 
+export async function getWorldCupNews(limit: number = 20): Promise<any> {
+  return apiClient.get(`/world-cup-news`, { limit });
+}
+
 export type { Match, Standing, Team, ApiResponse, NewsArticle, NewsResponse, User, Article, Comment, GeminiResponse } from './types';
 export { LEAGUE_IDS };

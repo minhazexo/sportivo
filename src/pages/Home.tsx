@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { getScores, getFixtures, getStandings, getSportsNews, LEAGUE_IDS } from '../lib/sportsApi';
+import { getScores, getFixtures, getStandings, getSportsNews, getWorldCupNews, LEAGUE_IDS } from '../lib/sportsApi';
 import type { Match, Standing, Article } from '../lib/sportsApi';
 import ScoreWidget from '../components/scores/ScoreWidget';
 import ArticleCard from '../components/news/ArticleCard';
@@ -9,7 +9,7 @@ import OptimizedImage from '../components/news/OptimizedImage';
 import { ArticleCardSkeleton, ScoreWidgetSkeleton, TableSkeleton } from '../components/news/Skeleton';
 import SEO, { generateOrganizationJsonLd } from '../components/SEO';
 import { motion, AnimatePresence } from 'motion/react';
-import { TrendingUp, ArrowRight, Calendar, Trophy, Clock, Newspaper, ChevronRight, ExternalLink, BarChart3, Star, Users, Timer, Eye } from 'lucide-react';
+import { TrendingUp, ArrowRight, Calendar, Trophy, Clock, Newspaper, ChevronRight, ExternalLink, BarChart3, Star, Users, Timer, Eye, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import apiClient from '../lib/apiClient';
 
@@ -235,6 +235,129 @@ function ScoreTicker({ matches }: { matches: Match[] }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── FIFA World Cup Section ────────────────────────────────────────────────
+
+function WorldCupSection({ articles }: { articles: any[] }) {
+  if (articles.length === 0) return null;
+
+  const featured = articles[0];
+  const rest = articles.slice(1, 7);
+
+  return (
+    <section className="mb-10">
+      <div
+        className="relative overflow-hidden rounded-sm mb-5"
+        style={{
+          background: 'linear-gradient(135deg, #0a1628 0%, #1a1a3e 50%, #0a1628 100%)',
+        }}
+      >
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-5 right-5 w-24 h-24 border-2 border-white/20 rounded-full" />
+          <div className="absolute bottom-5 left-5 w-16 h-16 border-2 border-white/10 rounded-full" />
+        </div>
+        <div className="relative z-10 px-5 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Globe className="w-6 h-6 text-yellow-400" />
+            <div>
+              <h2 className="text-lg font-extrabold text-white leading-tight">FIFA World Cup 2026</h2>
+              <p className="text-yellow-400/80 text-[10px] font-bold uppercase tracking-wider">Trending News & Updates</p>
+            </div>
+          </div>
+          <Link
+            to="/world-cup"
+            className="flex items-center gap-1.5 px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-accent text-white text-[10px] font-bold uppercase tracking-wider rounded-sm transition-all"
+          >
+            World Cup Hub <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Featured Article */}
+      <a
+        href={featured.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group block overflow-hidden rounded-sm border mb-4 transition-all hover:shadow-md"
+        style={{ backgroundColor: 'var(--color-card-bg)', borderColor: 'var(--color-border-primary)' }}
+      >
+        <div className="md:flex md:flex-row-reverse">
+          <div className="md:w-2/5 relative overflow-hidden bg-gray-100 dark:bg-gray-800 min-h-[180px]">
+            {featured.image ? (
+              <img
+                src={featured.image}
+                alt={featured.title}
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(37,99,235,0.2), rgba(37,99,235,0.05))' }}>
+                <Trophy className="w-12 h-12 text-yellow-500/30" />
+              </div>
+            )}
+            <div className="absolute top-2 left-2 z-10">
+              <span className="inline-flex items-center gap-1 bg-accent text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-sm">
+                <TrendingUp className="w-3 h-3" /> Top World Cup
+              </span>
+            </div>
+          </div>
+          <div className="md:w-3/5 p-5 flex flex-col justify-center">
+            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>
+              {featured.source}
+            </span>
+            <h3 className="text-base font-extrabold leading-tight group-hover:text-accent transition-colors mb-2 line-clamp-2 mt-1" style={{ color: 'var(--color-text-primary)' }}>
+              {featured.title}
+            </h3>
+            <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--color-text-secondary)' }}>
+              {featured.description}
+            </p>
+          </div>
+        </div>
+      </a>
+
+      {/* Rest of World Cup articles */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        {rest.map((article, idx) => (
+          <motion.a
+            key={article.url || idx}
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.05 }}
+            className="group block overflow-hidden rounded-sm border transition-all hover:shadow-sm"
+            style={{ backgroundColor: 'var(--color-card-bg)', borderColor: 'var(--color-border-primary)' }}
+          >
+            <div className="relative overflow-hidden aspect-[16/10]" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
+              {article.image ? (
+                <img
+                  src={article.image}
+                  alt={article.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Globe className="w-6 h-6" style={{ color: 'var(--color-text-tertiary)' }} />
+                </div>
+              )}
+            </div>
+            <div className="p-2.5">
+              <span className="text-[8px] font-bold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>
+                {article.source}
+              </span>
+              <h4 className="text-[11px] font-bold leading-snug line-clamp-2 group-hover:text-accent transition-colors mt-0.5" style={{ color: 'var(--color-text-primary)' }}>
+                {article.title}
+              </h4>
+            </div>
+          </motion.a>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -625,6 +748,8 @@ export default function Home() {
   const [standingsLoading, setStandingsLoading] = useState(true);
   const [sportsNews, setSportsNews] = useState<any[]>([]);
   const [sportsNewsLoading, setSportsNewsLoading] = useState(true);
+  const [worldCupNews, setWorldCupNews] = useState<any[]>([]);
+  const [worldCupLoading, setWorldCupLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -707,6 +832,22 @@ export default function Home() {
     fetchSportsNews();
   }, []);
 
+  useEffect(() => {
+    async function fetchWorldCupNews() {
+      try {
+        const data = await getWorldCupNews(8);
+        if (data?.articles) {
+          setWorldCupNews(data.articles);
+        }
+      } catch (error) {
+        console.error("World Cup news fetch error:", error);
+      } finally {
+        setWorldCupLoading(false);
+      }
+    }
+    fetchWorldCupNews();
+  }, []);
+
   const latestUpdates = articles.slice(0, 5);
 
   return (
@@ -739,6 +880,9 @@ export default function Home() {
 
           {/* Featured Content Grid */}
           <FeaturedContent articles={articles} sportsNews={sportsNews} loading={loading} />
+
+          {/* FIFA World Cup Section */}
+          {!worldCupLoading && <WorldCupSection articles={worldCupNews} />}
 
           {/* Ad placement between Featured Content and Results & Fixtures */}
           <AdPromo size="leaderboard" id="home-content-banner" className="my-8" />

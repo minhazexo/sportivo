@@ -284,6 +284,50 @@ export function registerSportsRoutes(app: Express) {
     }
   });
 
+  // world-cup-news endpoint — fetches FIFA World Cup specific trending news
+  app.get("/api/sports/world-cup-news", createRateLimiter({ windowMs: 15 * 60 * 1000, max: 200, message: "Too many news requests" }), async (req, res) => {
+    const limitParam = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
+    const limit = typeof limitParam === 'string' ? limitParam : '20';
+
+    if (!/^\d+$/.test(limit) || parseInt(limit) < 1 || parseInt(limit) > 100) {
+      return res.status(400).json({ error: 'Limit must be a number between 1 and 100' });
+    }
+
+    try {
+      const worldCupKeywords = ['world cup', 'fifa world cup', 'world cup 2026', 'fifa world cup qualifiers', 'world cup qualifying', 'world cup qualification'];
+
+      // Build a flat array of where clauses for Prisma
+      const whereClauses: any[] = [
+        { query: { in: ['world-cup', 'World Cup', 'WorldCup'] } },
+        { source: 'FIFA' },
+      ];
+
+      for (const keyword of worldCupKeywords) {
+        whereClauses.push({
+          OR: [
+            { title: { contains: keyword, mode: 'insensitive' as const } },
+            { description: { contains: keyword, mode: 'insensitive' as const } },
+          ]
+        });
+      }
+
+      const newsArticles = await prisma.cachedNews.findMany({
+        where: { OR: whereClauses },
+        orderBy: { publishedAt: 'desc' },
+        take: parseInt(limit)
+      });
+
+      res.json({
+        status: 'ok',
+        totalArticles: newsArticles.length,
+        articles: newsArticles.map(n => mapDbNewsToApi(n))
+      });
+    } catch (error) {
+      log(`❌ World Cup news fetch failed`, error);
+      res.status(500).json({ error: "Failed to fetch World Cup news" });
+    }
+  });
+
   // news endpoint (caching TTL: 1 hour)
   app.get("/api/sports/news", createRateLimiter({ windowMs: 15 * 60 * 1000, max: 200, message: "Too many news requests" }), async (req, res) => {
     const qParam = Array.isArray(req.query.q) ? req.query.q[0] : req.query.q;

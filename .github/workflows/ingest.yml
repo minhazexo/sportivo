@@ -2,8 +2,8 @@ name: Daily Sports Data Ingestion
 
 on:
   schedule:
-    # Every 6 hours: midnight, 6am, noon, 6pm UTC
-    - cron: '0 0,6,12,18 * * *'
+    # Every 4 hours during World Cup season
+    - cron: '0 0,4,8,12,16,20 * * *'
   workflow_dispatch:
     # Allows manual trigger from GitHub Actions tab
     inputs:
@@ -17,6 +17,7 @@ on:
           - full
           - sports
           - news
+          - world-cup
 
 jobs:
   ingest:

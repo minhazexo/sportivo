@@ -74,9 +74,13 @@ const RSS_FEEDS: { url: string; source: string; category: string }[] = [
   { url: 'https://feeds.bbci.co.uk/sport/rss.xml', source: 'BBC Sport', category: 'Sports' },
   { url: 'https://www.theguardian.com/uk/sport/rss', source: 'The Guardian', category: 'Sports' },
   { url: 'https://www.espn.com/espn/rss/news', source: 'ESPN', category: 'Sports' },
+
+  // FIFA World Cup specific feeds
+  { url: 'https://www.fifa.com/api/rss/latest', source: 'FIFA', category: 'World Cup' },
+  { url: 'https://feeds.bbci.co.uk/sport/football/rss.xml', source: 'BBC Football', category: 'Football' },
 ];
 
-const NEWS_QUERIES = ['sports', 'football', 'basketball', 'tennis', 'cricket', 'f1', 'nfl', 'nba', 'premier league', 'champions league'];
+const NEWS_QUERIES = ['sports', 'football', 'basketball', 'tennis', 'cricket', 'f1', 'nfl', 'nba', 'premier league', 'champions league', 'fifa world cup', 'world cup 2026', 'fifa world cup qualifiers'];
 
 // ─── Logging ─────────────────────────────────────────────────────────────────
 

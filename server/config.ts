@@ -83,4 +83,8 @@ export const RSS_FEEDS: { url: string; source: string; category: string }[] = [
   { url: 'https://feeds.bbci.co.uk/sport/rss.xml', source: 'BBC Sport', category: 'sports' },
   { url: 'https://www.theguardian.com/uk/sport/rss', source: 'The Guardian', category: 'sports' },
   { url: 'https://www.espn.com/espn/rss/news', source: 'ESPN', category: 'sports' },
+
+  // FIFA World Cup specific feeds
+  { url: 'https://www.fifa.com/api/rss/latest', source: 'FIFA', category: 'world-cup' },
+  { url: 'https://feeds.bbci.co.uk/sport/football/rss.xml', source: 'BBC Football', category: 'football' },
 ];

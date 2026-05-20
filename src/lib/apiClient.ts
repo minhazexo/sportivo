@@ -7,7 +7,7 @@ function buildUrl(path: string, params?: QueryParams) {
   
   // Decide routing base path
   let base = '/api';
-  const sportsEndpoints = ['/scores', '/fixtures', '/standings', '/teams', '/team', '/search-teams', '/match', '/news'];
+  const sportsEndpoints = ['/scores', '/fixtures', '/standings', '/teams', '/team', '/search-teams', '/match', '/news', '/world-cup-news'];
   if (sportsEndpoints.some(endpoint => normalizedPath.startsWith(endpoint))) {
     base = '/api/sports';
   } else if (normalizedPath.startsWith('/api')) {

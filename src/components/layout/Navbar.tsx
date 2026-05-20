@@ -12,6 +12,7 @@ import NotificationBell from './NotificationBell';
 const NAV_ITEMS = [
   { label: 'Home', href: '/', icon: Home },
   { label: 'Scores', href: '/fixtures' },
+  { label: 'World Cup', href: '/world-cup', icon: Trophy },
   { label: 'Leagues', href: '/leagues' },
   { label: 'Standings', href: '/standings' },
   { label: 'Teams', href: '/teams' },
