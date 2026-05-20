@@ -7,7 +7,7 @@
     "dev": "tsx server/server.ts",
     "build": "vite build && esbuild server/server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "build:static": "vite build",
-    "start": "node dist/server.cjs",
+    "start": "npx tsx server/server.ts",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "seed": "npx prisma db seed",
