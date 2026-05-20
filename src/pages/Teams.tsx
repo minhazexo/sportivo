@@ -1,21 +1,64 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Search, Filter, ArrowUpRight, Trophy } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import AdPromo from '../components/ads/AdPromo';
 import { Link } from 'react-router-dom';
 import { getTeams } from '../lib/sportsApi';
+import apiClient from '../lib/apiClient';
 import type { Team } from '../lib/sportsApi';
+
+interface LeagueMeta {
+  id: string;
+  name: string;
+  displayName: string;
+  sport: string;
+  country: string;
+  teamCount: number;
+}
+
+const SPORT_ICONS: Record<string, string> = {
+  'Soccer': '⚽',
+  'Basketball': '🏀',
+  'American Football': '🏈',
+  'Baseball': '⚾',
+  'Ice Hockey': '🏒',
+};
 
 export default function Teams() {
   const [teams, setTeams] = useState<Team[]>([]);
-  const [league, setLeague] = useState('English Premier League');
+  const [leagues, setLeagues] = useState<LeagueMeta[]>([]);
+  const [selectedLeagueId, setSelectedLeagueId] = useState<string>('');
+  const [selectedLeagueName, setSelectedLeagueName] = useState<string>('English Premier League');
+  const [selectedSport, setSelectedSport] = useState<string>('All');
   const [loading, setLoading] = useState(true);
 
+  // Fetch available leagues on mount
+  useEffect(() => {
+    async function fetchLeagues() {
+      try {
+        const data = await apiClient.get('/leagues');
+        if (data.leagues) {
+          const withTeams = data.leagues.filter((l: any) => l.teamCount > 0);
+          setLeagues(withTeams);
+          if (withTeams.length > 0 && !selectedLeagueId) {
+            setSelectedLeagueId(withTeams[0].id);
+            setSelectedLeagueName(withTeams[0].displayName);
+          }
+        }
+      } catch (error) {
+        console.error('[Teams] Failed to fetch leagues:', error);
+      }
+    }
+    fetchLeagues();
+  }, []);
+
+  // Fetch teams when league changes
   useEffect(() => {
     async function fetchTeams() {
+      if (!selectedLeagueName) return;
       setLoading(true);
       try {
-        const data = await getTeams(league);
+        const data = await getTeams(selectedLeagueName);
         setTeams(data.teams || []);
       } catch (error) {
         console.error("Teams error:", error);
@@ -24,28 +67,70 @@ export default function Teams() {
       }
     }
     fetchTeams();
-  }, [league]);
+  }, [selectedLeagueName]);
+
+  // Get unique sports from available leagues
+  const sports = ['All', ...new Set(leagues.map(l => l.sport).filter(Boolean))];
+
+  // Filter leagues by selected sport
+  const filteredLeagues = selectedSport === 'All'
+    ? leagues
+    : leagues.filter(l => l.sport === selectedSport);
+
+  function handleLeagueSelect(leagueId: string, leagueName: string) {
+    setSelectedLeagueId(leagueId);
+    setSelectedLeagueName(leagueName);
+  }
 
   return (
     <div className="space-y-12">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b-2 border-black pb-6">
         <div>
           <h1 className="editorial-title text-5xl italic tracking-[ -0.05em]">Team Directory</h1>
-          <p className="font-medium text-[13px] mt-2" style={{ color: 'var(--color-text-secondary)' }}>Historical data, active squads and seasonal performance metrics.</p>
-        </div>
-        <div className="flex gap-4">
-          <select 
-            value={league}
-            onChange={(e) => setLeague(e.target.value)}
-            className="editorial-label bg-black text-white px-6 py-3 border-none focus:ring-0 cursor-pointer hover:bg-accent transition-colors"
-          >
-            <option value="English Premier League">Premier League</option>
-            <option value="Spanish La Liga">La Liga</option>
-            <option value="German Bundesliga">Bundesliga</option>
-            <option value="French Ligue 1">Ligue 1</option>
-          </select>
+          <p className="font-medium text-[13px] mt-2" style={{ color: 'var(--color-text-secondary)' }}>Historical data, active squads and seasonal performance metrics across {leagues.length} leagues.</p>
         </div>
       </header>
+
+      {/* Sport filter tabs */}
+      <div className="flex flex-wrap gap-2 -mt-4">
+        {sports.map(sport => (
+          <button
+            key={sport}
+            onClick={() => setSelectedSport(sport)}
+            className={`editorial-label px-4 py-2 whitespace-nowrap transition-colors ${
+              selectedSport === sport
+                ? 'bg-black text-white'
+                : 'bg-[var(--color-card-bg)] border border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:border-accent hover:text-accent'
+            }`}
+          >
+            {sport === 'All' ? '🏆 All Sports' : `${SPORT_ICONS[sport] || ''} ${sport}`}
+          </button>
+        ))}
+      </div>
+
+      {/* League selector tabs */}
+      <div className="flex flex-wrap gap-2">
+        {filteredLeagues.map(l => (
+          <button
+            key={l.id}
+            onClick={() => handleLeagueSelect(l.id, l.displayName)}
+            className={`editorial-label px-5 py-3 whitespace-nowrap transition-all ${
+              selectedLeagueId === l.id
+                ? 'bg-accent text-white shadow-lg'
+                : 'bg-[var(--color-card-bg)] border border-[var(--color-border-primary)] text-[var(--color-text-secondary)] hover:border-accent hover:text-accent hover:bg-[var(--color-bg-tertiary)]'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              {SPORT_ICONS[l.sport] || '🏆'}
+              <span className="font-semibold">{l.displayName}</span>
+              <span className="text-[10px] opacity-60">({l.teamCount})</span>
+            </span>
+          </button>
+        ))}
+        {filteredLeagues.length === 0 && (
+          <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No leagues available for this sport</p>
+        )}
+      </div>
 
       {loading ? (
         <div className="flex justify-center py-20">
@@ -53,7 +138,7 @@ export default function Teams() {
         </div>
       ) : teams.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-lg" style={{ color: 'var(--color-text-tertiary)' }}>No teams found for {league}</p>
+          <p className="text-lg" style={{ color: 'var(--color-text-tertiary)' }}>No teams found for {selectedLeagueName}</p>
         </div>
       ) : (
         <>
